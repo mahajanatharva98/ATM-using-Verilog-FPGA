@@ -1,0 +1,108 @@
+module ATM_1 (
+   input clk,
+   input reset,
+   input card_valid,
+   input pin_valid,
+   input cancel,
+   input transaction_chosen,
+   output reg reading_card,
+   output reg reading_pin,
+   output reg choosing_transaction,
+   output reg performing_transaction,
+   output reg ejecting_card
+);
+
+localparam
+   IDLE = 4'd0,
+   READ_CARD = 4'd1,
+   READ_PIN = 4'd2,
+   CHOOSE_TRANS = 4'd3,
+   PERFORM_TRANS = 4'd4,
+   EJECT_CARD = 4'd5;
+
+reg [3:0] current_state, next_state;
+
+always @(posedge clk or posedge reset) begin
+   if (reset)
+       current_state <= IDLE;
+   else
+       current_state <= next_state;
+end
+
+always @(*) begin
+   case (current_state)
+       IDLE: begin
+           // In the IDLE state, the ATM is waiting for a card to be inserted
+           reading_card <= 1'b1;
+           reading_pin <= 1'b0;
+           choosing_transaction <= 1'b0;
+           performing_transaction <= 1'b0;
+           ejecting_card <= 1'b0;
+           if (!card_valid)
+               next_state <= READ_PIN;
+           else
+               next_state <= IDLE;
+       end
+
+       READ_PIN: begin
+           // In the READ_PIN state, the ATM is waiting for the PIN to be entered
+           reading_card <= 1'b0;
+           reading_pin <= 1'b1;
+           choosing_transaction <= 1'b0;
+           performing_transaction <= 1'b0;
+           ejecting_card <= 1'b0;
+           if (!pin_valid)
+               next_state <= CHOOSE_TRANS;
+           else if (!cancel)
+               next_state <= EJECT_CARD;
+           else
+               next_state <= READ_PIN;
+       end
+
+       CHOOSE_TRANS: begin
+           // In the CHOOSE_TRANS state, the ATM is waiting for the user to choose a transaction
+           reading_card <= 1'b0;
+           reading_pin <= 1'b0;
+           choosing_transaction <= 1'b1;
+           performing_transaction <= 1'b0;
+           ejecting_card <= 1'b0;
+           if (!transaction_chosen)
+               next_state <= PERFORM_TRANS;
+           else if (!cancel)
+               next_state <= EJECT_CARD;
+           else
+               next_state <= CHOOSE_TRANS;
+       end
+
+       PERFORM_TRANS: begin
+           // In the PERFORM_TRANS state, the ATM is performing the chosen transaction
+           reading_card <= 1'b0;
+           reading_pin <= 1'b0;
+           choosing_transaction <= 1'b0;
+           performing_transaction <= 1'b1;
+           ejecting_card <= 1'b0;
+           next_state <= EJECT_CARD; // Fixed transition to EJECT_CARD state
+       end
+
+       EJECT_CARD: begin
+           // In the EJECT_CARD state, the ATM is ejecting the card
+           reading_card <= 1'b0;
+           reading_pin <= 1'b0;
+           choosing_transaction <= 1'b0;
+           performing_transaction <= 1'b0;
+           ejecting_card <= 1'b1;
+           next_state <= IDLE;
+       end
+
+       default: begin
+           reading_card <= 1'b0;
+           reading_pin <= 1'b0;
+           choosing_transaction <= 1'b0;
+           performing_transaction <= 1'b0;
+           ejecting_card <= 1'b0;
+           next_state <= IDLE;
+       end
+   endcase
+end
+
+endmodule
