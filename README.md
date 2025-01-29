@@ -1,1 +1,2 @@
-This Project is based on FPGA Board of Spartan 6 XC6SLX9 in CSG324 Package.
+# Automated Teller Machine (ATM) with FPGA and Xilinx ISE
+Implemented the functionality of an Automated Teller Machine (ATM) on a Spartan-6 FPGA board using Verilog. The ATM system simulates key banking operations, including cash withdrawals, balance inquiries, and account transfers. Conducted simulations and testing to ensure the accuracy of the transactions and optimal performance of the system on FPGA hardware.
